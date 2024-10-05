@@ -39,3 +39,4 @@ export const headerSection = (options: HeaderOptions): Content => {
     columns: [headerLogo, headerTitle, headerDate],
   };
 };
+ 

@@ -1,6 +1,8 @@
 import { Content, StyleDictionary, TDocumentDefinitions } from 'pdfmake/interfaces';
 // sections
 import { footerSection } from './sections/footer.section';
+// interfaces
+import { CompleteOrder } from 'src/interfaces/order.interface';
 // helpers
 import { CurrencyFormatter, DateFormatter } from 'src/helpers';
 
@@ -24,7 +26,22 @@ const styles: StyleDictionary = {
   },
 };
 
-export const orderByIdReport = (): TDocumentDefinitions => {
+interface ReportValues {
+  title?: string;
+  subtitle?: string;
+  data: CompleteOrder;
+}
+
+export const orderByIdReport = (values: ReportValues): TDocumentDefinitions => {
+  const { data } = values;
+
+  const subtotal = data.order_details.reduce(
+    (acc, detail) => acc + detail.quantity * +detail.products.price,
+    0,
+  );
+
+  const total = subtotal * 1.25;
+
   return {
     styles: styles,
     header: logo,
@@ -44,8 +61,8 @@ export const orderByIdReport = (): TDocumentDefinitions => {
           },
           {
             text: [
-              { text: 'Recibo N° 1234155\n', bold: true },
-              `Fecha del recibo: ${DateFormatter.getDDMMMMYYYY(new Date())}\nPagar antes de: ${DateFormatter.getDDMMMMYYYY(new Date())}\n`,
+              { text: `Recibo N° ${data.order_id}\n`, bold: true },
+              `Fecha del recibo: ${DateFormatter.getDDMMMMYYYY(data.order_date)}\nPagar antes de: ${DateFormatter.getDDMMMMYYYY(new Date())}\n`,
             ],
             alignment: 'right',
           },
@@ -60,8 +77,8 @@ export const orderByIdReport = (): TDocumentDefinitions => {
             text: 'Cobrar a: \n',
             style: 'subheader',
           },
-          `Razon social: Richter Supermark Michael Holz 
-            Grenzacherweg 237`,
+          `Razon social: ${data.customers.customer_name}
+          Contacto: ${data.customers.contact_name}`,
         ],
       },
       // Tabla del detalle de la orden
@@ -73,36 +90,21 @@ export const orderByIdReport = (): TDocumentDefinitions => {
           widths: [50, '*', 'auto', 'auto', 'auto'],
           body: [
             ['ID', 'Descripción', 'Cantidad', 'Precio', 'Total'],
-            [
-              '1',
-              'Producto 1',
-              '1',
-              '1000',
+            ...data.order_details.map((detail) => [
+              detail.order_detail_id,
+              detail.products.product_name,
+              detail.quantity.toString(),
               {
-                text: CurrencyFormatter.formatCurrency(1800),
+                text: CurrencyFormatter.formatCurrency(+detail.products.price),
                 alignment: 'right',
               },
-            ],
-            [
-              '2',
-              'Producto 2',
-              '2',
-              '2000',
               {
-                text: CurrencyFormatter.formatCurrency(2000),
+                text: CurrencyFormatter.formatCurrency(
+                  +detail.products.price * detail.quantity,
+                ),
                 alignment: 'right',
               },
-            ],
-            [
-              '3',
-              'Producto 3',
-              '3',
-              '2000',
-              {
-                text: CurrencyFormatter.formatCurrency(150),
-                alignment: 'right',
-              },
-            ],
+            ]),
           ],
         },
       },
@@ -123,14 +125,14 @@ export const orderByIdReport = (): TDocumentDefinitions => {
                 [
                   'Subtotal',
                   {
-                    text: CurrencyFormatter.formatCurrency(2150),
+                    text: CurrencyFormatter.formatCurrency(subtotal),
                     alignment: 'right',
                   },
                 ],
                 [
                   { text: 'Total', bold: true },
                   {
-                    text: CurrencyFormatter.formatCurrency(150),
+                    text: CurrencyFormatter.formatCurrency(total),
                     alignment: 'right',
                     bold: true,
                   },

@@ -9,8 +9,15 @@ const logo: Content = {
   margin   : [0, 0, 0, 20],
 };
 
+const currentDate: Content = {
+  text     : DateFormatter.getDDMMMMYYYY(new Date()),
+  alignment: 'right',
+  margin   : [20, 30],
+  width    : 200,
+};
+
 interface HeaderOptions {
-  title?: string;
+  title?   : string;
   subtitle?: string;
   showLogo?: boolean;
   showDate?: boolean;
@@ -20,18 +27,28 @@ export const headerSection = (options: HeaderOptions): Content => {
   const { title, subtitle, showLogo = true, showDate = true } = options;
 
   const headerLogo: Content = showLogo ? logo : null;
-  const headerDate: Content = showDate
+  const headerDate: Content = showDate ? currentDate : null;
+
+  const headerSubtitle: Content = subtitle
     ? {
-        text: DateFormatter.getDDMMMMYYYY(new Date()),
-        alignment: 'right',
-        margin: [20, 20, 20, 20],
+        text     : subtitle,
+        alignment: 'center',
+        margin   : [0, 2, 0, 0],
+        style    : { fontSize: 16, bold: true },
       }
     : null;
 
-  const headerTitle: Content = title 
+  const headerTitle: Content = title
     ? {
-        text: title,
-        style: { bold: true }
+        stack: [
+          {
+            text     : title,
+            alignment: 'center',
+            margin   : [0, 15, 0, 0],
+            style    : { fontSize: 22, bold: true },
+          },
+          headerSubtitle
+        ],
       }
     : null;
 
@@ -39,4 +56,3 @@ export const headerSection = (options: HeaderOptions): Content => {
     columns: [headerLogo, headerTitle, headerDate],
   };
 };
- 

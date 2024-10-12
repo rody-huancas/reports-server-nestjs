@@ -6,3 +6,4 @@ export * from './hello-world.report';
 export * from './order-by-id-report';
 export * from './sections/footer.section';
 export * from './sections/header.section';
+export * from './statistics.report';
